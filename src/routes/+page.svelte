@@ -3,14 +3,11 @@
     let myId = ''
     let peerId = ''
     let client = {}
-    let peerConnection = true
+    let peerConnection = false
     
     
     let message = ''
-    let messages = [{
-        peer: '',
-        content: `asjdjadjsdj `
-    }]
+    let messages = []
     /**
      * {
      *  peer: peerId,
