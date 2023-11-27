@@ -9,8 +9,10 @@
     import BottomBar from "../components/BottomBar.svelte";
     import { instance } from "../store/instance";
     import { onMount } from "svelte";
+    import StorageManager from "../components/StorageManager.svelte";
 
     let isDesktop;
+    let init = false
     onMount( () => {
         const checkDevice = () => {
             if (window.innerWidth > 800) {
@@ -20,8 +22,12 @@
             }
         };
         checkDevice();
+        init = true
     })
 </script>
+{#if init}
+<StorageManager />
+{/if}
 <div class="grid">
     <Header />
     <div class="position-relative d-flex flex-column row-gap-2 h-100 ">
@@ -39,9 +45,7 @@
                 {/if}
             </div>
         </div>
-        {#if ! $user.name}
-            <LoginDialog />
-        {/if }
+        <LoginDialog />
     </div>
     <BottomBar/>
 </div>

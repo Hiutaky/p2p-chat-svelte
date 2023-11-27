@@ -8,9 +8,26 @@
     import Camera from "$lib/images/camera.svg"
     import PhoneDown from "$lib/images/phone-down.svg"
     import PhoneUp from "$lib/images/phone-up.svg"
+    import { afterUpdate, beforeUpdate } from "svelte";
     let message = ''
+    let autoscroll = false;
+
 
     let IncomingVideo, OutcomingVideo = false
+    let MessageWrapper = false
+
+    beforeUpdate(() => {
+        if (MessageWrapper) {
+            const scrollableDistance = MessageWrapper.scrollHeight - MessageWrapper.offsetHeight;
+            autoscroll = MessageWrapper.scrollTop > scrollableDistance - 20;
+        }
+    });
+
+    afterUpdate(() => {
+        if (autoscroll) {
+            MessageWrapper.scrollTo(0, MessageWrapper.scrollHeight);
+        }
+    });
     $: if( IncomingVideo && $p2p.incomingStream)
         IncomingVideo.srcObject = $p2p.incomingStream
     $: if( OutcomingVideo && $p2p.outcomingStream ) 
@@ -26,7 +43,10 @@
 
     const sendMessage = () => {
         if( ! Object.keys($p2p.outcoming).includes($p2p.current) )
-            connect($p2p.current, $user.name)
+            $p2p.outcoming[$p2p.current] = $p2p.client.connect($p2p.current, {
+                label: $user.name
+            })
+
         const receiver = $p2p.outcoming[$p2p.current]
         const messageData = {
             peer: $user.id,
@@ -121,7 +141,7 @@
         <div class="d-flex flex-row column-gap-2 align-items-center fw-medium">
             <AvatarBeam  name={$p2p.current} />
             <span class="{$p2p.current ? `` : `placeholder placeholder-wave`}">
-                {$p2p.incoming[$p2p.current]?.label}
+                {$p2p.current}
             </span>
         </div>
         <div >
@@ -150,65 +170,87 @@
         </div>
     </div>
     {/if}
-    {#if $p2p.incomingStream || $p2p.outcomingStream}
-        <div class="position-relative d-flex flex-row gap-3 align-items-start">
-            <div class="w-100 rounded position-relative">
-                <video class="h-100 bg-dark w-100 rounded" bind:this={IncomingVideo} autoplay playsinline></video>
-                <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">{ Object.keys($p2p.incoming).includes($p2p.current) ? $p2p.incoming[$p2p.current].label : `Loading`}</span>
-            </div>
-            <div class="w-100 d-flex rounded position-relative">
-                <video class="w-100 rounded" bind:this={OutcomingVideo} autoplay playsinline></video>
-                <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">You</span>
-            </div>
-            <div class="position-absolute left-0 bottom-0 w-100 d-flex flex-row justify-content-center">
-                <div class="d-flex flex-row column-gap-2 p-2">
-                    <button 
-                        class="phone-down-btn p-3 bg-danger border-0"
-                        on:click={closeCall}
-                    >
-                        <img src={PhoneDown} class="icon" />
-                    </button>
+    <div class="d-flex flex-column flex-md-row gap-3 align-items-start">
+        {#if $p2p.incomingStream || $p2p.outcomingStream }
+            <div class="video-wrapper position-relative d-flex flex-column flex-md-row gap-3 align-items-start">
+                <div class="w-100 rounded position-relative">
+                    <video class="d-flex h-100 bg-dark w-100 rounded" bind:this={IncomingVideo} autoplay playsinline></video>
+                    <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">{ $p2p.current }</span>
                 </div>
-            </div>
-        </div>
-    {/if}
-    <div class="messages-wrapper d-flex flex-column row-gap-1 bg-dark p-2 rounded">
-        {#if Object.keys($p2p.messages).includes($p2p.current)}
-            {#each $p2p.messages[$p2p.current] as message, i (i) }
-            <div class="{ i > 0 && $p2p.messages[$p2p.current][i-1].peer !== message.peer ? 'mt-2' : ''} d-flex flex-row { message.peer === $user.id ? `justify-content-end` : `justify-content-start`}">
-                <div  class="d-flex gap-3 justify-content-between message-item py-1 px-3 {  message.peer === $user.id ? 'bg-user' : ' bg-black bg-opacity-50'} rounded-1">
-                    {message.content}
-                    <div class="fs-13 text-opacity-50 text-white align-self-end">{ getHours(message.timestamp) }</div>
+                <div class="position-absolute w-25 bottom-0 end-0 m-2 d-flex position-relative">
+                    <video class="w-100 rounded" bind:this={OutcomingVideo} autoplay playsinline></video>
+                    <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">You</span>
                 </div>
-            </div>
-            {/each}
-        {:else}
-            <div class="d-flex flex-row justify-content-end ">
-                <div  class="placeholder placeholder-wave d-flex gap-3 justify-content-between message-item py-1 px-3 bg-light rounded-1">
-                    Some text here
-                    <div class="fs-13 text-opacity-50 text-white align-self-end">00:00</div>
-                </div>
-            </div>
-            <div class="d-flex flex-row justify-content-start mt-3 ">
-                <div  class="placeholder placeholder-wave d-flex gap-3 justify-content-between message-item py-1 px-3 bg-light rounded-1">
-                    Some other text here text here
-                    <div class="fs-13 text-opacity-50 text-white align-self-end">00:00</div>
+                <div class="position-absolute left-0 bottom-0 w-100 d-flex flex-row justify-content-center">
+                    <div class="d-flex flex-row column-gap-2 p-2">
+                        <button 
+                            class="phone-down-btn p-3 bg-danger border-0"
+                            on:click={closeCall}
+                        >
+                            <img src={PhoneDown} class="icon" />
+                        </button>
+                    </div>
                 </div>
             </div>
         {/if}
+        <div class="w-100 d-flex flex-column gap-2 chat-wrapper">
+            <div class="messages-wrapper d-flex flex-column row-gap-1 bg-dark p-2 rounded" bind:this={MessageWrapper}>
+                {#if Object.keys($p2p.messages).includes($p2p.current)}
+                    {#each $p2p.messages[$p2p.current] as message, i (i) }
+                    <div 
+                        key={i}
+                        class="{ i > 0 && $p2p.messages[$p2p.current][i-1].peer !== message.peer ? 'mt-2' : ''} d-flex flex-row { message.peer === $user.id ? `justify-content-end` : `justify-content-start`}"
+                    >
+                        <div  class="d-flex gap-3 justify-content-between message-item py-1 px-3 {  message.peer === $user.id ? 'bg-user' : ' bg-black bg-opacity-50'} rounded-1">
+                            {message.content}
+                            <div class="fs-13 text-opacity-50 text-white align-self-end">{ getHours(message.timestamp) }</div>
+                        </div>
+                    </div>
+                    {/each}
+                {:else}
+                    <div class="d-flex flex-row justify-content-end ">
+                        <div  class="placeholder placeholder-wave d-flex gap-3 justify-content-between message-item py-1 px-3 bg-light rounded-1">
+                            Some text here
+                            <div class="fs-13 text-opacity-50 text-white align-self-end">00:00</div>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-row justify-content-start mt-3 ">
+                        <div  class="placeholder placeholder-wave d-flex gap-3 justify-content-between message-item py-1 px-3 bg-light rounded-1">
+                            Some other text here text here
+                            <div class="fs-13 text-opacity-50 text-white align-self-end">00:00</div>
+                        </div>
+                    </div>
+                {/if}
+            </div>
+            <form class="d-flex flex-row column-gap-2">
+                <input
+                    type="text"
+                    bind:value={message}
+                    class="w-100 border border-dark rounded bg-dark text-white px-2"
+                    placeholder="Enter a message"
+                >
+                <button on:click|preventDefault={sendMessage} class="btn btn-primary">Send</button>
+            </form>
+        </div>
     </div>
-    <form class="d-flex flex-row column-gap-2">
-        <input
-            type="text"
-            bind:value={message}
-            class="w-100 border border-dark rounded bg-dark text-white px-2"
-            placeholder="Enter a message"
-        >
-        <button on:click|preventDefault={sendMessage} class="btn btn-primary">Send</button>
-    </form>
 </div>
 
 <style>
+    .messages-wrapper {
+        overflow: overlay;
+        width: 100%;
+        max-height: 100%;
+        max-height: 70vh;
+        min-height: 70vh;
+    }
+    @media (min-width: 768px) {
+        .video-wrapper {
+            width: 100%;
+        }
+        .chat-wrapper {
+            min-width: 33%;
+        }
+    }
     .phone-down-btn {
         border-radius: 100%;
     }

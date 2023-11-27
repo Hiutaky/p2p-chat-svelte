@@ -1,6 +1,6 @@
 <script>
     //@ts-nocheck
-    import { connect } from "$lib/p2p";
+    import { connect, keysIncludes } from "$lib/p2p";
 
     import { p2p } from "../store/p2p";
     import { user } from "../store/user";
@@ -10,7 +10,13 @@
 
     const connectToPeer = () => {
         if( ! $p2p.client || peerId === '' || peerId === $user.id ) return
-        connect(peerId, $user.name)
+        if( keysIncludes($p2p.messages, peerId)) {
+            $p2p.current = peerId
+            peerId = ''
+            return
+        }
+        $p2p.outcoming[peerId] = $p2p.client.connect(peerId, { label: $user.name } )
+
         $p2p.messages[peerId] = [{
             peer: $user.id,
             timestamp: new Date().getTime(),
