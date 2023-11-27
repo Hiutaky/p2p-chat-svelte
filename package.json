@@ -19,6 +19,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"boring-avatars": "^1.10.1",
 		"p2pt": "^1.5.1",
 		"peerjs": "^1.5.1",
 		"uuid4": "^2.0.3"

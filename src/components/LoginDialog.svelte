@@ -15,7 +15,7 @@
     const updateName = () => {
         if( name === '' || ! name )
             return
-        $user.name = name
+        $user.name = `${name}-${Math.floor(Math.random() * 10000)}`
     }
 
     const addMessage = (message, peer, label = false) => {
@@ -27,7 +27,7 @@
 
     const startConnection = async () => {
         updateName()
-        $p2p.client = P2P_Client(false)
+        $p2p.client = P2P_Client($user.name)
         $p2p.client.on('open', () => {
             $user.id = $p2p.client.id
             console.log(`Ready to receive Connection`)
@@ -55,19 +55,22 @@
 
 
 </script>
-<span class="d-flex flex-column row-gap-1">
-    {#if $user.name}
-        Connected as {$user.name} with sid {$user.id}
-    {:else}
-        Enter a name an start chatting!
-        <form class="d-flex flex-row column-gap-2">
-            <input 
-                type="text" 
-                bind:value={name} 
-                class="w-100 border border-black rounded bg-dark text-white px-2"
-                placeholder="Enter your name"
-            >
-            <button on:click={startConnection} class="btn btn-primary">Start</button>
-        </form>
-    {/if}
+<span class="fs-5 login-modal position-absolute w-100 start-0 top-0 bg-dark d-flex flex-column align-items-center justify-content-center row-gap-2 px-5">
+    Enter a name an start chatting!
+    <form class="d-flex flex-column row-gap-2 w-100">
+        <input 
+            type="text" 
+            bind:value={name} 
+            class="w-100 border border-black rounded bg-black bg-opacity-50 py-2 text-white px-3"
+            placeholder="Enter your name"
+        >
+        <button on:click={startConnection} class="btn btn-primary">Start</button>
+    </form>
 </span>
+
+<style>
+    .login-modal {
+        z-index: 999;
+        height: 100%;
+    }
+</style>

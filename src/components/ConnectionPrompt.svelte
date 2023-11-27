@@ -24,7 +24,7 @@
     }
 </script>
 
-<form class="d-flex flex-row column-gap-2">
+<form class="d-flex flex-row column-gap-2 p-3">
     <input 
         bind:value={peerId} 
         class="border bg-dark rounded w-100 text-white px-2"

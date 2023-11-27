@@ -2,6 +2,6 @@
 import { Peer } from "peerjs"
 import { p2p } from "../store/p2p"
 export const P2PClient = ( peerId = '' ) => {
-    const client = new Peer()
+    const client = new Peer(peerId)
     return client
 }
