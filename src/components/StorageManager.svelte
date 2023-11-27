@@ -15,7 +15,7 @@
                     messages: $p2p.messages
                 }
             }
-            if( ! storage.user || $user.name !== storage.user.name )
+            if( ! storage || ! storage.user || $user.name !== storage.user.name )
                 payload.user = $user
             Storage.set(payload)
         }
@@ -25,7 +25,7 @@
 
     onMount(() => {
         const storage = Storage.get()
-        if( storage.user && Object.keys( storage.user).includes('name' ) ){
+        if( Object.keys(storage).includes('user') && Object.keys( storage.user).includes('name' ) ){
             if( storage.p2p && storage.p2p.messages )
                 $p2p.messages = storage.p2p.messages
             $user.name = storage.user.name
