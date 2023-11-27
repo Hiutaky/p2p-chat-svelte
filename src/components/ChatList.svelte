@@ -15,12 +15,12 @@
         <h3 class="fw-medium m-0">Chats</h3>
         {#if $p2p.incoming && Object.keys($p2p.incoming).length }
             {#each Object.entries($p2p.incoming) as [key,peer],i (i) }
-                <div class="d-flex flex-row align-items-center gap-3 p-3 py-2 bg-dark rounded {$p2p.current === key ? 'border' : ' border-dark' }" on:click={() => setCurrent(key)}>
+                <button class="d-flex flex-row align-items-center gap-3 p-3 py-2 bg-dark rounded {$p2p.current === key ? 'border' : ' border-dark' }" on:click={() => setCurrent(key)}>
                     <AvatarBeam name={peer.label} />
                     <span>
                         {peer.label}
                     </span>
-                </div>
+                </button>
             {/each}
         {:else}
         <div class="p-3 bg-dark rounded">

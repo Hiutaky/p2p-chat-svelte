@@ -32,7 +32,8 @@
             $user.id = $p2p.client.id
             console.log(`Ready to receive Connection`)
         })
-
+        const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+        
         $p2p.client.on('connection', (conn) => {
             $p2p.incoming[conn.peer] = conn
             if( ! Object.keys($p2p.messages).includes(conn.peer) ) {
@@ -43,6 +44,7 @@
                 }]
                 connect(conn.peer, $user.name)
             }
+            
                 /*conn.on('open', () => {
                     'peerConnection' = $p2p.client.connect(conn.peer)
                 })*/
@@ -51,6 +53,34 @@
                 addMessage(message, conn.peer, conn.label)
             })
         })
+
+        $p2p.client.on('call', function(call) {
+            console.log('Incoming Video Call', call)
+            $p2p.calls[call.peer] = call
+            $p2p.currentCall = call.peer
+            $p2p.current = call.peer
+            $p2p.ringing = true
+        });
+    }
+
+    const acceptCall = () => {
+        if( ! $p2p.ringing ) return
+        $p2p.ringing = false
+        getUserMedia({video: true, audio: true}, function(stream) {
+            $p2p.outcomingStream = stream
+            $p2p.calls[$p2p.ringing].answer(stream)
+            $p2p.calls[$p2p.ringing].on('stream', function(remoteStream) {
+                $p2p.incomingStream = remoteStream
+            })
+            call.on('close', function(remoteStream) {
+                stream.getTracks().forEach( (track) => track.stop() )
+                $p2p.outcomingStream = false
+                $p2p.incomingStream = false
+                delete $p2p.calls[$p2p.ringing]
+            })
+        }, function(err) {
+            console.log('Failed to get local stream' ,err);
+        });
     }
 
 

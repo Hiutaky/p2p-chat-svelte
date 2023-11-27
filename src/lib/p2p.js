@@ -19,3 +19,6 @@ export const connect = (id, label = false) => {
     $p2p.outcoming[peerId] = peer
     return peer*/
 }
+export const keysIncludes = (state, value) => {
+    return Object.keys(state).includes(value)
+}
