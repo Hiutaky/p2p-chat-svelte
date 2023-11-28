@@ -178,7 +178,7 @@
                     <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">{ $p2p.current }</span>
                 </div>
                 <div class="position-absolute w-25 bottom-0 end-0 m-2 d-flex position-relative">
-                    <video class="w-100 rounded" bind:this={OutcomingVideo} autoplay playsinline></video>
+                    <video class="w-100 rounded" bind:this={OutcomingVideo} autoplay muted playsinline></video>
                     <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">You</span>
                 </div>
                 <div class="position-absolute left-0 bottom-0 w-100 d-flex flex-row justify-content-center">

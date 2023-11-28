@@ -4,7 +4,6 @@
     import { p2p } from "../store/p2p";
     import { user } from "../store/user";
 
-
     let subscribe = (_p2p, _user) => {
         const storage = Storage.get()
         if( $user.name ) {
