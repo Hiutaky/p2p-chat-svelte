@@ -9,8 +9,9 @@
     $: CreateClient = false
     $: init = false
     onMount(async () => {
-        const { StartClient } = await import("$lib");
-        CreateClient = StartClient
+        const StartClient = await import("$lib");
+        console.log()
+        CreateClient = StartClient.default
         init = true
         startConnection()
     })

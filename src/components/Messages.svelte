@@ -60,8 +60,8 @@
 
 </script>
 
-    <div class="w-100 d-flex flex-column gap-2 chat-wrapper  h-100">
-        <div class="messages-wrapper overflow-scroll d-flex flex-column row-gap-1 bg-dark p-2 rounded" bind:this={MessageWrapper}>
+    <div class="w-100 d-flex flex-column gap-2 chat-wrapper  overflow-auto h-100">
+        <div class="messages-wrapper  overflow-scroll d-flex flex-column row-gap-1 bg-dark p-2 rounded" bind:this={MessageWrapper}>
             {#if Object.keys($serverGlobal.messages).includes($serverGlobal.current)}
                 {#each $serverGlobal.messages[$serverGlobal.current] as message, i (i) }
                 <div

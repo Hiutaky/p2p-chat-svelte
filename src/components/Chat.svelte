@@ -6,7 +6,7 @@
     import AvatarBeam from "./AvatarBeam.svelte";
     import Camera from "$lib/images/camera.svg"
     
-    export let className = 'd-md-grid'
+    export let className = 'd-grid overflow-auto'
     const initVideoCall = async () => {
         const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mediaDevices.GetUserMedia;
         await getUserMedia({video: true, audio: true}, function(stream) {
