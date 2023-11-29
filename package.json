@@ -19,6 +19,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"axios": "^1.6.2",
 		"boring-avatars": "^1.10.1",
 		"p2pt": "^1.5.1",
 		"peerjs": "^1.5.1",
