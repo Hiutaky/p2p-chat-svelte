@@ -1,7 +1,7 @@
 // place files you want to import through the `$lib` alias in this folder.
 import { Peer } from "peerjs"
 
-const publicHost = (room) => `${room}.sudo-ku.app`
+export const publicHost = (room) => `${room}.sudo-ku.app`
 let StartClient = false
 if( window.location.hostname === '127.0.0.1') {
   StartClient = ( peerId = '', path = 'main', port = 9000 ) => {

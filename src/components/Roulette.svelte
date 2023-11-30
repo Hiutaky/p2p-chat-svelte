@@ -7,6 +7,7 @@
     import Reload from "$lib/images/reload.svg"
     import uuid4 from "uuid4"
     import axios from "axios"
+    import { publicHost } from "$lib";
     const initState = {
         client: false,
         inCall: false,
@@ -125,7 +126,7 @@
                 console.log('Searching for Peers')
                 if( state.peer || state.inCall) clearInterval(queueInterval)
                 randomHash = uuid4()
-                let peers = (await axios.get('http://localhost:9003/queue/peerjs/peers')).data
+                let peers = (await axios.get(`${publicHost('queue')}/queue/peerjs/peers`)).data
                 peers = peers.filter( (peer) => peer !== $user.name) 
                 const ran = Math.floor( Math.random() * peers.length)
                 if( peers.length ) {
