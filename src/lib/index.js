@@ -3,8 +3,8 @@ import { Peer } from "peerjs"
 
 const publicHost = (room) => `${room}.sudo-ku.app`
 let StartClient = false
-if(window.location.hostname === '127.0.0.1') {
-  StartClient = ( peerId = '', path = 'global', port = 9000 ) => {
+if( window.location.hostname === '127.0.0.1') {
+  StartClient = ( peerId = '', path = 'main', port = 9000 ) => {
    console.log( 'starting', peerId, path, port )
    const client = new Peer(peerId, {
      host: "localhost",
@@ -14,7 +14,7 @@ if(window.location.hostname === '127.0.0.1') {
    return client
  }
 }else {
-  StartClient = ( peerId = '', path = 'global', port = 9000 ) => {
+  StartClient = ( peerId = '', path = 'main', port = 9000 ) => {
     console.log( 'starting', peerId, path, port )
     const client = new Peer(peerId, {
       host: publicHost(path),

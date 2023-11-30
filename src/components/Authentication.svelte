@@ -2,7 +2,7 @@
     //@ts-nocheck
     import { onDestroy, onMount } from "svelte";
     import {user} from "../store/user"
-    import {serverGlobal} from "../store/serverGlobal"
+    import {main} from "../store/main"
     import { connect, keysIncludes } from "$lib/p2p";
     import { instance } from "../store/instance";
 
@@ -25,7 +25,7 @@
     }
 
     const addMessage = (message, peer, label = false) => {
-        $serverGlobal.messages[peer] = [...$serverGlobal.messages[peer], {
+        $main.messages[peer] = [...$main.messages[peer], {
             peer: peer,
             ...message
         }]
@@ -33,27 +33,29 @@
 
     let startConnection = () => {
         if( ! $user.name || ! CreateClient ) return
-        console.log('Client open')
-        $serverGlobal.client = CreateClient($user.name)
-        $serverGlobal.client.on('open', () => {
-            $user.id = $serverGlobal.client.id
-            console.log(`Ready to receive Connection`)
-            $serverGlobal.client.socket.on('message', (message) => {
-                console.log(message)
+        try {
+            $main.client = CreateClient($user.name)
+        } catch (e) {
+            $main.connected = false
+            console.error(e)
+        }
+        $main.client.on('open', () => {
+            console.log('Client ready')
+            $main.connected = true
+            $user.id = $main.client.id
+            $main.client.socket.on('message', (message) => {
             })
         })
-
-        $serverGlobal.client.listAllPeers( (peers) => { $serverGlobal.peers = peers.filter( (peer) => peer !== $user.name) })
         
-        $serverGlobal.client.on('connection', (conn) => {
-            $serverGlobal.incoming[conn.peer] = conn
-            if( ! keysIncludes( $serverGlobal.outcoming, conn.peer ) ){
-                $serverGlobal.outcoming[conn.current] = $serverGlobal.client.connect(conn.current, {
+        $main.client.on('connection', (conn) => {
+            $main.incoming[conn.peer] = conn
+            if( ! keysIncludes( $main.outcoming, conn.peer ) ){
+                $main.outcoming[conn.current] = $main.client.connect(conn.current, {
                     label: $user.name
                 })
             }
-            if( ! Object.keys($serverGlobal.messages).includes(conn.peer) ) {
-                $serverGlobal.messages[conn.peer] = [{
+            if( ! Object.keys($main.messages).includes(conn.peer) ) {
+                $main.messages[conn.peer] = [{
                     peer: conn.peer,
                     timestamp: new Date().getTime(),
                     content: `${conn.label} started a conversation.`
@@ -65,12 +67,12 @@
             })
         })
 
-        $serverGlobal.client.on('call', function(call) {
-            console.log('Incoming Video Call', call)
-            $serverGlobal.calls[call.peer] = call
-            $serverGlobal.currentCall = call.peer
-            $serverGlobal.current = call.peer
-            $serverGlobal.ringing = true
+        $main.client.on('call', function(call) {
+            console.log('Incoming Video Call')
+            $main.calls[call.peer] = call
+            $main.currentCall = call.peer
+            $main.current = call.peer
+            $main.ringing = true
             $instance.view = 'chat'
         })
     }

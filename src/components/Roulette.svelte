@@ -31,8 +31,8 @@
         state.OutcomingVideo.srcObject =  state.outcomingStream
 
     onMount( async () => {
-        const { StartClient } = await import("$lib");
-        starter = StartClient
+        const StartClient = await import("$lib");
+        starter = StartClient.default
     })
 
     onDestroy( () => {
@@ -110,6 +110,7 @@
     }
 
     const startQueue = () => {
+        console.log(starter)
         if( ! queueClient || queueClient.disconnected )
             queueClient = starter($user.name, `queue`, 9003)
         isQueue = true

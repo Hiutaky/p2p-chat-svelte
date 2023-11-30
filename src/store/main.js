@@ -1,6 +1,7 @@
 import {derived, writable} from "svelte/store"
-export const serverGlobal = writable({
+export const main = writable({
     client: false,
+    connected: false,
     current: false,
     incoming: {},
     outcoming: {},

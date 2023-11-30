@@ -1,8 +1,8 @@
-import { serverGlobal } from "../store/serverGlobal"
+import { main } from "../store/main"
 
 export const connect = (id, label = false) => {
     console.log( 'conneecting' )
-    serverGlobal.update( (s) => ({
+    main.update( (s) => ({
         ...s,
         outcoming: {
             ...s.outcoming,
@@ -16,7 +16,7 @@ export const connect = (id, label = false) => {
     p2p.client.connect(id, {
         label: $user.name
     })
-    $serverGlobal.outcoming[peerId] = peer
+    $main.outcoming[peerId] = peer
     return peer*/
 }
 export const keysIncludes = (state, value) => {

@@ -2,30 +2,30 @@
     //@ts-nocheck
     import { connect, keysIncludes } from "$lib/p2p";
 
-    import { serverGlobal } from "../store/serverGlobal";
+    import { main } from "../store/main";
     import { user } from "../store/user";
 
     let peerId = ``
 
 
     const connectToPeer = () => {
-        if( ! $serverGlobal.client || peerId === '' || peerId === $user.id ) return
-        if( keysIncludes($serverGlobal.messages, peerId)) {
-            $serverGlobal.current = peerId
+        if( ! $main.client || peerId === '' || peerId === $user.id ) return
+        if( keysIncludes($main.messages, peerId)) {
+            $main.current = peerId
             peerId = ''
             return
         }
-        $serverGlobal.outcoming[peerId] = $serverGlobal.client.connect(peerId, { label: $user.name } )
+        $main.outcoming[peerId] = $main.client.connect(peerId, { label: $user.name } )
 
-        $serverGlobal.messages[peerId] = [{
+        $main.messages[peerId] = [{
             peer: $user.id,
             timestamp: new Date().getTime(),
             content: `You started a conversation.`
         }]
-        /*$serverGlobal.waiting = [...$serverGlobal.waiting, 
+        /*$main.waiting = [...$main.waiting, 
             peer
         ]*/
-        console.log(`Connected to ${peerId}`)
+        console.log(`Connected as ${peerId}`)
         peerId = ''
     }
 </script>

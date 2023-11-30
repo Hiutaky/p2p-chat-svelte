@@ -55,3 +55,5 @@ export const hashCode = (name) => {
       return (yiq >= 128) ? '#000000' : '#FFFFFF';
   
   };
+
+
