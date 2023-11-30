@@ -2,6 +2,7 @@
 import { Peer } from "peerjs"
 
 export const publicHost = (room) => `${room}.sudo-ku.app`
+export const getPublicURI = (room) => `https://${publicHost(room)}`
 let StartClient = false
 if( window.location.hostname === '127.0.0.1') {
   StartClient = ( peerId = '', path = 'main', port = 9000 ) => {
