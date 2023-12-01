@@ -18,7 +18,7 @@
 </script>
 
 <div class="position bottom-0 start-0 w-100 p-2 bg-black bg-opacity-50 d-flex flex-row justify-content-evenly">
-    <a href="/">
+    <a href="/chats">
         <button 
             class="border-0 bg-transparent text-white d-flex flex-column align-items-center row-gap-1  justify-content-center p-1"
             on:click={ () => viewChats() }

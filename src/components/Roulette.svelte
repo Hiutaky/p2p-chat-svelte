@@ -7,7 +7,8 @@
     import Reload from "$lib/images/reload.svg"
     import uuid4 from "uuid4"
     import axios from "axios"
-    import { getPublicURI, publicHost } from "$lib";
+    import { getPublicURI } from "$lib/utilities";
+
     const initState = {
         client: false,
         inCall: false,
@@ -126,7 +127,7 @@
                 console.log('Searching for Peers')
                 if( state.peer || state.inCall) clearInterval(queueInterval)
                 randomHash = uuid4()
-                let peers = (await axios.get(`${getPublicURI('queue')}/queue/peerjs/peers`)).data
+                let peers = (await axios.get(`${getPublicURI('queue')}/peerjs/peers`)).data
                 peers = peers.filter( (peer) => peer !== $user.name) 
                 const ran = Math.floor( Math.random() * peers.length)
                 if( peers.length ) {
@@ -169,63 +170,61 @@
     }
 
 </script>
-<div class="w-100">
-    {#if  state.inCall || state.outCall}
-        <div class="video-wrapper w-100 d-flex flex-column flex-md-row gap-3 align-items-start p-3">
-            <div class="w-100 rounded position-relative">
-                <video class="d-flex h-100 w-100 rounded" bind:this={state.IncomingVideo} autoplay playsinline></video>
-                <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">{ state.peer }</span>
-            </div>
-            <div class="w-100 rounded d-flex position-relative">
-                <video class="w-100 rounded" bind:this={state.OutcomingVideo} autoplay muted playsinline></video>
-                <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">You</span>
-            </div>
+{#if  state.inCall || state.outCall}
+    <div class="video-wrapper w-100 d-flex flex-column flex-md-row gap-3 align-items-start p-3">
+        <div class="w-100 rounded position-relative">
+            <video class="d-flex h-100 w-100 rounded" bind:this={state.IncomingVideo} autoplay playsinline></video>
+            <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">{ state.peer }</span>
         </div>
-        <div class="w-100 d-flex flex-row justify-content-center">
-            <div class="d-flex flex-row column-gap-2 p-2">
-                <button 
-                    class="phone-down-btn p-3 bg-danger border-0"
-                    on:click={(onClose)}
-                >
-                    <img src={Exit} class="icon" />
-                </button>
-                <button 
-                    class="phone-down-btn p-3 bg-primary border-0"
-                    on:click={(next)}
-                >
-                    <img src={Reload} class="icon" />
-                </button>
-            </div>
-        </div>
-    {:else}
-    <div class="d-flex flex-column align-items-center justify-content-center position-absolute start-0 top-0 w-100 h-100 bg-dark">
-        <div class="d-flex flex-column row-gap-3 align-items-center p-3 bg-black bg-opacity-50 shadow rounded">
-            <AvatarBeam name={randomHash} size={64}/>
-            {#if state.peer }
-            <span class="fw-medium fs-6">Connecting with {state.peer}...</span>
-            {:else if ! state.inCall && ! state.outCall && ! state.queue }
-            <span class="fw-medium fs-6">Ready for a match?</span>
-            <div class="d-flex flex-row column-gap-3  justify-content-center">
-                <button 
-                    class=" btn btn-success d-flex"
-                    on:click={startQueue}
-                >
-                    Start
-                </button>
-            </div>
-            {:else if state.queue}
-            <span class="fw-medium fs-6">Searching for a match...</span>
-            <button 
-                class=" btn btn-danger d-flex"
-                on:click={onClose}
-            >
-                Close
-            </button>
-            {/if}
+        <div class="w-100 rounded d-flex position-relative">
+            <video class="w-100 rounded" bind:this={state.OutcomingVideo} autoplay muted playsinline></video>
+            <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">You</span>
         </div>
     </div>
-    {/if}
+    <div class="w-100 d-flex flex-row justify-content-center">
+        <div class="d-flex flex-row column-gap-2 p-2">
+            <button 
+                class="phone-down-btn p-3 bg-danger border-0"
+                on:click={(onClose)}
+            >
+                <img src={Exit} class="icon" />
+            </button>
+            <button 
+                class="phone-down-btn p-3 bg-primary border-0"
+                on:click={(next)}
+            >
+                <img src={Reload} class="icon" />
+            </button>
+        </div>
+    </div>
+{:else}
+<div class="d-flex flex-column align-items-center justify-content-center position-absolute start-0 top-0 w-100 h-100 bg-dark">
+    <div class="d-flex flex-column row-gap-3 align-items-center p-3 bg-black bg-opacity-50 shadow rounded">
+        <AvatarBeam name={randomHash} size={64}/>
+        {#if state.peer }
+        <span class="fw-medium fs-6">Connecting with {state.peer}...</span>
+        {:else if ! state.inCall && ! state.outCall && ! state.queue }
+        <span class="fw-medium fs-6">Ready for a match?</span>
+        <div class="d-flex flex-row column-gap-3  justify-content-center">
+            <button 
+                class=" btn btn-success d-flex"
+                on:click={startQueue}
+            >
+                Start
+            </button>
+        </div>
+        {:else if state.queue}
+        <span class="fw-medium fs-6">Searching for a match...</span>
+        <button 
+            class=" btn btn-danger d-flex"
+            on:click={onClose}
+        >
+            Close
+        </button>
+        {/if}
+    </div>
 </div>
+{/if}
 
 <style>
     video {

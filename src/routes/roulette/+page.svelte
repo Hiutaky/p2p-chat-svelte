@@ -2,4 +2,7 @@
     import Roulette from "../../components/Roulette.svelte";
 
 </script>
-<Roulette />
+
+<div class="w-100">
+    <Roulette />
+</div>

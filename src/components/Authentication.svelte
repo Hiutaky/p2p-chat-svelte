@@ -5,6 +5,8 @@
     import {main} from "../store/main"
     import { connect, keysIncludes } from "$lib/p2p";
     import { instance } from "../store/instance";
+    import axios from "axios";
+    import { getPeers, getPublicURI } from "$lib/utilities";
 
     $: CreateClient = false
     $: init = false
@@ -15,7 +17,8 @@
         init = true
         startConnection()
     })
-    //$: startConnection($user.name, P2P_Client)
+    $: if( !$main.client && $user.name ) 
+        startConnection()
 
     let name = ''
     const updateName = () => {
@@ -39,10 +42,11 @@
             $main.connected = false
             console.error(e)
         }
-        $main.client.on('open', () => {
+        $main.client.on('open', async () => {
             console.log('Client ready')
             $main.connected = true
             $user.id = $main.client.id
+            $main.peers = await getPeers()
             $main.client.socket.on('message', (message) => {
             })
         })
