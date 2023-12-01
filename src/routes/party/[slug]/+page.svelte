@@ -116,11 +116,19 @@
         _maybe_start_client(true)
     }
 </script>
-<div class="d-flex flex-column row-gap-2">
-    <div>Party Id: {$party.partyId}</div>
-    <div>Your Id: {$party.id}</div>
+<div class="d-flex flex-column row-gap-2 p-3">
+    <div class="bg-danger px-2 py-1 text-white rounded fw-bold">
+        ! Party feature is still in beta !
+    </div>
+    <div>Party Id {$party.partyId}</div>
+    <div class="">Sharable party 
+        <span class="bg-black bg-opacity-50 px-2 py-1 rounded">
+            {window.location.origin}/party/{$party.partyId}?join=true
+        </span>
+    </div>
+    <div>Your Id {$party.id}</div>
     <div>
-        you
+        You
         {#if $party.outStream}
         <video bind:this={OutVideo} autoplay />
         {/if}

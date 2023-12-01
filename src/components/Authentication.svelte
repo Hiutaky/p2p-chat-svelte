@@ -46,7 +46,7 @@
             console.log('Client ready')
             $main.connected = true
             $user.id = $main.client.id
-            $main.peers = await getPeers()
+            $main.peers = (await getPeers()).filter( peer => peer !== $user.id )
             $main.client.socket.on('message', (message) => {
             })
         })
