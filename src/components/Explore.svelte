@@ -34,25 +34,6 @@
     <ConnectionPrompt />
 </div>
 <style>
-    .pulse {
-        animation: pulse 1s infinite linear;
-    }
-    @keyframes pulse {
-        33% {
-            transform: scale(1);
-        }
-        66%{
-            transform: scale(1.1);
-        }
-        100% {
-            transform: scale(1.0);
-        }
-    }
-    .online-pointer {
-        width: 12px;
-        height: 12px;
-        border-radius: 100%;
-    }
     .grid {
         display: grid;
         grid-template-rows: 1fr max-content;

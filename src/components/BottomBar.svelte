@@ -4,6 +4,7 @@
     import ShareIcon from "$lib/images/share.svg"
     import ExploreIcon from "$lib/images/explore.svg"
     import RandomIcon from "$lib/images/random.svg"
+    import LiveIcon from "$lib/images/live.svg"
     import { instance } from "../store/instance";
     import { main } from "../store/main";
 
@@ -53,11 +54,13 @@
             <span class="fs-13">Party</span>
         </button>
     </a>
+    <a href="/live">
     <button 
         class="border-0 bg-transparent text-white d-flex  flex-column row-gap-1 align-items-center justify-content-center"
         on:click={() => $instance.view = 'chats' }
     >
-        <img src={ShareIcon} class="icon">
-        <span class="fs-13">Share</span>
+        <img src={LiveIcon} class="icon">
+        <span class="fs-13">Live</span>
     </button>
+    </a>
 </div>

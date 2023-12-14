@@ -4,7 +4,9 @@ const ServerPorts = {
   main: 9000,
   queue: 9003,
   roulette: 9001,
-  party: 9002
+  party: 9002,
+  live: 9004,
+  "live-explore": 9005
 }
 const defaultServer = 'main'
 const isLocalhost = () => window.location.hostname === '127.0.0.1' 
