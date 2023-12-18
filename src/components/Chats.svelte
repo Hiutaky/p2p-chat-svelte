@@ -1,4 +1,5 @@
 <script>
+    import { fly } from "svelte/transition";
     import { instance } from "../store/instance";
     import { main } from "../store/main";
     import AvatarBeam from "./AvatarBeam.svelte";
@@ -6,7 +7,7 @@
     export let className = 'grid'
 </script>
 
-<div class="{className} bg-black bg-opacity-25">
+<div class="{className} bg-black bg-opacity-25" in:fly>
     <div class="d-flex flex-column row-gap-3 p-3 ">
         <h3 class="fw-medium m-0">Chats</h3>
         {#if $main.messages && Object.keys($main.messages).length }

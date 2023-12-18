@@ -1,7 +1,6 @@
 <script>
     import ChatIcon from "$lib/images/chats.svg"
-    import SettingsIcon from "$lib/images/settings.svg"
-    import ShareIcon from "$lib/images/share.svg"
+    import GroupIcon from "$lib/images/group.svg"
     import ExploreIcon from "$lib/images/explore.svg"
     import RandomIcon from "$lib/images/random.svg"
     import LiveIcon from "$lib/images/live.svg"
@@ -50,7 +49,7 @@
         <button
             class="border-0 bg-transparent text-white d-flex  flex-column row-gap-1 align-items-center justify-content-center"
         >
-            <img src={SettingsIcon} class="icon">
+            <img src={GroupIcon} class="icon">
             <span class="fs-13">Party</span>
         </button>
     </a>

@@ -11,6 +11,7 @@
     import mUnmute from "$lib/images/microphone.svg"
     import AvatarBeam from "./AvatarBeam.svelte";
     import { keysIncludes } from "$lib/p2p";
+    import { stopTracks } from "$lib/utilities";
 
     let IncomingVideo, OutcomingVideo = false
     //
@@ -79,9 +80,9 @@
     const closeCall = () => {
         if( keysIncludes($main.calls, $main.currentCall) ) {
             if( $main.outcomingStream )
-                $main.outcomingStream.getTracks().forEach( (track) => track.stop() )
+                stopTracks($main.outcomingStream)
             if( $main.incomingStream )
-                $main.incomingStream.getTracks().forEach( (track) => track.stop() )
+                stopTracks($main.incomingStream)
             $main.outcomingStream = false
             $main.incomingStream = false
             $main.calls[$main.current].close()
@@ -99,9 +100,9 @@
             })
             $main.calls[$main.currentCall].on('close', function(remoteStream) {
                 if( $main.outcomingStream )
-                    $main.outcomingStream.getTracks().forEach((track) => track.stop() )
+                    stopTracks($main.outcomingStream)
                 if( $main.incomingStream )
-                    $main.incomingStream.getTracks().forEach((track) => track.stop() )
+                    stopTracks($main.incomingStream)                
                 delete $main.calls[$main.current]
                 $main.incomingStream = false
                 $main.outcomingStream = false

@@ -4,8 +4,10 @@
     import BottomBar from "../components/BottomBar.svelte";
     import StorageManager from "../components/StorageManager.svelte";
     import Authentication from "../components/Authentication.svelte";
-    import { onMount } from "svelte";
-
+    import { onDestroy, onMount } from "svelte";
+    import { notifier } from "../store/notifier";
+    import { fade } from "svelte/transition";
+    let mainEl = false
     let isDesktop;
     let init = false
     onMount( () => {
@@ -17,14 +19,31 @@
             }
         };
         checkDevice();
+        mainEl.addEventListener('click', (e) => {
+            maybeCloseNotifier(e)
+        })
         init = true
     })
+    onDestroy( () => {
+        if( mainEl )
+            mainEl.removeEventListener('click')
+    })
+
+    $: maybeCloseNotifier = (e) => {
+        if( 
+            ! e.srcElement.offsetParent?.classList.contains('notifications-wrapper') &&
+            ! e.srcElement.classList.contains('notification-icon-wrapper') &&
+            ! e.srcElement.offsetParent?.classList.contains('notification-icon-wrapper') &&
+            $notifier.open
+        )
+            $notifier.open = false
+    }
 </script>
 {#if init}
 <StorageManager />
 {/if}
-<main >
-    <div class="grid">
+<main bind:this={mainEl}>
+    <div class="grid overflow-x-hidden">
         <Header />
         <div class="position-relative overflow-auto d-flex flex-column row-gap-2 h-100 ">
             <div class="d-flex flex-column row-gap-2 bg-dark h-100 bg-opacity-50 ">
@@ -39,6 +58,7 @@
 </main>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,500;0,600;0,700;1,600&display=swap');
     @media (min-width: 768px) {
         .desk-grid {
             width: 100%;
@@ -57,5 +77,8 @@
         max-height: 100vh;
         overflow: auto;
         height: 100vh;
+    }
+    * {
+        font-family: 'Lato', sans-serif !important;
     }
 </style>

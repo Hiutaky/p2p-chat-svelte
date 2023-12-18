@@ -1,12 +1,13 @@
 <script>
     import AloneGif from "$lib/images/alone.gif"
+    import { fly } from "svelte/transition";
     import { main } from "../store/main";
     import AvatarBeam from "./AvatarBeam.svelte";
     import ConnectionPrompt from "./ConnectionPrompt.svelte";
     $: onlineUsers = $main.peers.length+1
 </script>
 
-<div class="vertical-grid bg-black bg-opacity-25 h-100 overflow-auto">
+<div class="vertical-grid bg-black bg-opacity-25 h-100 overflow-auto" in:fly>
     <div class="d-flex flex-column row-gap-3 p-3 overflow-auto">
         <h3 class="fw-medium m-0">Explore</h3>
         <span>{onlineUsers} user{onlineUsers > 1 ? `s` : ``} online</span>

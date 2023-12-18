@@ -2,7 +2,7 @@
     import { hashCode, getUnit, getBoolean, getRandomColor, getContrast } from '$lib/utilities';
 
     export let size = 32;
-    export let name = ''
+    export let name = 'some name here'
     export const props = {
         colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
         square: false,

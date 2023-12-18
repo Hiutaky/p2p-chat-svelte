@@ -3,6 +3,7 @@
     import { user } from "../../store/user";
     import { getPeers } from "$lib/utilities";
     import Eye from "$lib/images/eye.svg"
+    import { fly } from "svelte/transition";
     let CreateClient = false
     let lives = []
     let fetchedLives = {}
@@ -57,7 +58,7 @@
 
 </script>
 
-<div class="d-flex flex-column row-gap-3 p-3 h-100 overflow-auto w-100">
+<div class="d-flex flex-column row-gap-3 p-3 h-100 overflow-auto w-100" in:fly>
     <div class="d-flex flex-row justify-content-between align-items-center">
         <h3>Explore Live</h3>
         <a href="/live/create">
@@ -68,22 +69,36 @@
             </button>
         </a>
     </div>
-    <div class="lives-grid bg-black bg-opacity-50 rounded w-100 p-3">
-        {#each lives as live, i }
-        <a href="/live/{live}" class="text-white text-decoration-none">
-            <div class="d-flex flex-column row-gap-2 p-2 bg-dark rounded">
-                <div class="position-relative">
-                    <img class="w-100 rounded" src={fetchedLives[live] ? fetchedLives[live].image : ``} />
-                    <div class="position-absolute end-0 bottom-0 m-1 d-flex flex-row column-gap-2 px-2 py-1 bg-dark rounded">
-                        <img class="icon" src={Eye} />
-                        <span>{fetchedLives[live] ? fetchedLives[live].viewers : 0}</span>
+    <div class="lives-grid bg-black gap-2 bg-opacity-50 rounded w-100 p-3">
+        {#if lives.length }
+            {#each lives as live, i }
+            <a href="/live/{live}" class="text-white text-decoration-none">
+                <div class="d-flex flex-column row-gap-2 p-2 bg-dark rounded">
+                    <div class="position-relative">
+                        <img class="w-100 rounded" src={fetchedLives[live] ? fetchedLives[live].image : ``} />
+                        <div class="position-absolute end-0 bottom-0 m-1 d-flex flex-row column-gap-2 px-2 py-1 bg-dark rounded">
+                            <img class="icon" src={Eye} />
+                            <span>{fetchedLives[live] ? fetchedLives[live].viewers : 0}</span>
+                        </div>
                     </div>
+                    <span class="fw-bold">{fetchedLives[live] ? fetchedLives[live].title : ``}</span>
+                    <span class="fs-14">{live}</span>
                 </div>
-                <span class="fw-bold">{fetchedLives[live] ? fetchedLives[live].title : ``}</span>
-                <span class="fs-14">{live}</span>
+            </a>
+            {/each}
+        {:else}
+            {#each Array(3).fill(0) as live, i }
+            <div class="text-white text-decoration-none">
+                <div class="d-flex flex-column row-gap-2 p-2 bg-dark rounded">
+                    <div class="position-relative">
+                        <div class="placeholder placeholder-wave w-100 rounded p-5 bg-black bg-opacity-50" />
+                    </div>
+                    <span class="fw-bold placeholder">Loading</span>
+                    <span class="fs-14 placeholder">Loading</span>
+                </div>
             </div>
-        </a>
-        {/each}
+            {/each}
+        {/if}
     </div>
 </div>
 

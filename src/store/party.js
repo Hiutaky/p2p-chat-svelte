@@ -1,11 +1,13 @@
 import {derived, writable} from "svelte/store"
-export const party = writable({
+export const defaultParty = {
     client: false,
     connected: false,
     id: ``,
-    inStreams: [],
+    inStreams: {},
     outStream: false,
     peers: [],
-    calls: [],
-    getUserMedia: false
-})
+    calls: {},
+    waiting: [],
+    getUserMedia: false,
+}
+export const party = writable(defaultParty)

@@ -13,7 +13,10 @@ const isLocalhost = () => window.location.hostname === '127.0.0.1'
 export const publicHost = (server = defaultServer) => ! isLocalhost() ? `${server}.sudo-ku.app` : `127.0.0.1:${ServerPorts[server]}`
 export const getPublicURI = (server = defaultServer) => ! isLocalhost() ? `https://${publicHost(server)}/${server}` : `http://${publicHost(server)}/${server}`
 export const getPeers = async (server = defaultServer) => (await axios.get( `${getPublicURI(server)}/peerjs/peers` )).data
-
+export const stopTracks = (stream) => { 
+  console.log('Stopping tracks')
+  stream.getTracks().forEach( track => track.stop() )
+}
 export const hashCode = (name) => {
     var hash = 0;
     for (var i = 0; i < name.length; i++) {

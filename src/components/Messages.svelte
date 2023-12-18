@@ -1,15 +1,13 @@
 <script>
-    import { readable } from "svelte/store";
-
-    
     //@ts-nocheck
-    import { main } from "../store/main";
+    import { keysIncludes } from "$lib/p2p";
+    import { fly } from "svelte/transition";
+import { main } from "../store/main";
     import { user } from "../store/user";
     import { afterUpdate, beforeUpdate, onMount } from "svelte";
     let message = ''
 
     let MessageWrapper = false
-    let height = 0
 
     $: messages = $main.messages[$main.current]
     $: if( $main.current && MessageWrapper) {
@@ -24,16 +22,6 @@
     afterUpdate( () => {
         if( peer !== $main.current)
             MessageWrapper.scrollTo(0, MessageWrapper.scrollHeight)
-
-        return
-        if( height === 1 )
-            MessageWrapper.scrollBottom()
-        else if( height < MessageWrapper.scrollHeight )
-            MessageWrapper.scrollTo({
-                top: MessageWrapper.scrollHeight,
-                left: 0,
-                behavior: "smooth",
-            })
     })
 
     const getHours = (timestamp) => {
@@ -44,22 +32,48 @@
     }
 
     const sendMessage = () => {
-        if( ! Object.keys($main.outcoming).includes($main.current) )
+        if( 
+            ! Object.keys($main.outcoming).includes($main.current) || 
+            ($main.outcoming[$main.current] && ! $main.outcoming[$main.current].open )
+        ) {
             $main.outcoming[$main.current] = $main.client.connect($main.current, {
-                label: $user.name
+                label: $user.name,
+                metadata: { 
+                    messages: JSON.stringify( $main.messages[$main.current].map( (message) => {
+                        delete message.pending
+                        return message
+                    } ) )
+                }
             })
-            const messageData = {
-                peer: $user.id,
-                content: message,
-                timestamp: new Date().getTime()
+            console.log('Initializing Connection vs Peer')
+            console.log( $main.outcoming[$main.current])
+
+        }
+        let messageData = {
+            peer: $user.id,
+            type: 'MESSAGE',
+            content: message,
+            timestamp: new Date().getTime()
+        }
+        let receiver = $main.outcoming[$main.current]
+        if( receiver ) {
+            if( ! receiver.open ) {
+                /*receiver = $main.client.connect($main.current)
+                $main.outcoming[$main.current] = receiver*/
+                receiver.on('open', (conn) => {
+                    receiver.send( messageData )
+                })
+            } else {
+                receiver.send( messageData )
             }
-        const receiver = $main.outcoming[$main.current]
-        if( ! receiver || !receiver.open )
-            receiver.on('open', (conn) => {
-                receiver.send(messageData)
+            receiver.on('error', (content) => {
+                console.log('Remote peer not available', content)
+                messageData.pending = true
             })
-        else
-            receiver.send(messageData)
+        }else {
+            messageData.pending = true
+        }
+        //maybe recreate the client if not open
 
         if( ! Object.keys($main.messages).includes($main.current) )
             $main.messages[$main.current] = []
@@ -118,12 +132,13 @@
         bind:this={MessageWrapper}
     >
         {#if Object.keys($main.messages).includes($main.current)}
-            {#each messages as message, i (i) }
+            {#each messages.filter( message => message.type === 'MESSAGE') as message, i (i) }
             <div
                 key={i}
+                in:fly
                 class="{ i > 0 && $main.messages[$main.current][i-1].peer !== message.peer ? 'mt-2' : ''} d-flex flex-row { message.peer === $user.id ? `justify-content-end` : `justify-content-start`}"
             >
-                <div class="d-flex gap-3 justify-content-between message-item py-1 px-3 {  message.peer === $user.id ? 'bg-user' : ' bg-black bg-opacity-50'} rounded-1">
+                <div class="{ message.pending ? `border border-danger` : `` } {  message.peer === $user.id ? 'bg-user' : ' bg-black bg-opacity-50'} d-flex gap-3 justify-content-between message-item py-1 px-3 rounded-1">
                     {@html getSnippet(message.content)}
                     <div class="fs-13 text-opacity-50 text-white align-self-end">{ getHours(message.timestamp) }</div>
                 </div>

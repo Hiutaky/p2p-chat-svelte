@@ -1,12 +1,9 @@
 <script>
     import { onDestroy } from "svelte";
 
-    export let props = {
-        stream: false,
-        peer: '',
-        label: 'Connected to '
-    }
-    export let setScreenshot = () => {}
+    export let stream = false
+    export let peer = ''
+    export let setScreenshot = false
 
     let VideoElement = false
     let ImageElement = false
@@ -16,10 +13,9 @@
         clearInterval(interval)
     })
 
-    $: if( props.stream && VideoElement ) {
-        VideoElement.srcObject = props.stream
-        VideoElement.play()
-        if( ! interval ) {
+    $: if( stream && VideoElement ) {
+        VideoElement.srcObject = stream
+        if( ! interval && setScreenshot ) {
             setScreenshot(takeScreenshot())
             interval = setInterval( () => {
                 setScreenshot(takeScreenshot())
@@ -40,24 +36,19 @@
             console.log(e)
         }
     }
-
 </script>
 
-<div class="d-flex flex-column row-gap-2 align-items-start">
-    <video 
-        class={`rounded ${props.peer ? `` : `placeholder placeholder-wave`}`}
-        bind:this={VideoElement} 
-        autoplay
-    ></video>
-</div>
-<div class="d-flex flex-column">
-    <img  bind:this={ImageElement} />
-    <button 
-        on:click={takeScreenshot}
-        class="btn btn-primary"
-    >
-        Take Screenshot
-    </button>
+<div class="w-100">
+    <div class="position-relative d-flex flex-column row-gap-2 align-items-start">
+        <video 
+            class={`w-100 rounded ${peer ? `` : `placeholder placeholder-wave`}`}
+            bind:this={VideoElement} 
+            autoplay
+        ></video>
+        <span class="m-2 position-absolute fs-13 start-0 bottom-0 rounded bg-dark px-2">
+            {peer}
+        </span>
+    </div>
 </div>
 
 <style>

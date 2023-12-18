@@ -6,6 +6,8 @@
     import AvatarBeam from "./AvatarBeam.svelte";
     import Camera from "$lib/images/camera.svg"
     import { keysIncludes } from "$lib/p2p";
+    import { fly } from "svelte/transition";
+    import { stopTracks } from "$lib/utilities";
     
     export let className = 'd-grid '
     const initVideoCall = async () => {
@@ -20,9 +22,9 @@
             })
             call.on('close', function() {
                 if( $main.outcomingStream )
-                    $main.outcomingStream.getTracks().forEach((track) =>  track.stop() )
+                    stopTracks($main.outcomingStream)
                 if( $main.incomingStream )
-                    $main.incomingStream.getTracks().forEach((track) => track.stop() )
+                    stopTracks($main.incoming)
                 delete $main.calls[$main.current]
                 $main.incomingStream = false
                 $main.outcomingStream = false
@@ -36,7 +38,7 @@
     }
 </script>
 
-<div class="position-relative {className} chat-container h-100 w-100 flex-column p-3 bg-black bg-opacity-25 overflow-auto">
+<div class="position-relative {className} chat-container h-100 w-100 flex-column p-3 bg-black bg-opacity-25 overflow-auto" in:fly>
     <div class="d-flex flex-row align-items-center justify-content-between mb-3 ">
         <div class="d-flex flex-row column-gap-2 align-items-center fw-medium">
             <AvatarBeam  name={$main.current} />

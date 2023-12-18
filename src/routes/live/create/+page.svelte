@@ -7,6 +7,7 @@
     import RemoteVideo from "../../../components/RemoteVideo.svelte";
     import AvatarBeam from "../../../components/AvatarBeam.svelte";
     import Eye from "$lib/images/eye.svg"
+    import { stopTracks } from "$lib/utilities";
 
     let CreateClient = false
     let VideoElement = false
@@ -17,11 +18,11 @@
     let state = {
         connected: false,
         client: false,
-        outstream: false,
         openConnections: {},//array containing open data connections
         relays: [], //array containing relays IDs
         peers: [] // array containing all the peers
     }
+    let outstream = false
     let messages = []
     let viewersInterval = false
     let liveData = {
@@ -30,8 +31,8 @@
         viewers: 0
     }
 
-    $: if( state.outstream && VideoElement )
-        VideoElement.srcObject = state.outstream
+    $: if( outstream && VideoElement )
+        VideoElement.srcObject = outstream
 
     onMount(async () => {
         const StartClient = await import("$lib");
@@ -41,10 +42,8 @@
         clearInterval(viewersInterval)
         if( state.client )
             state.client.destroy()
-        if( state.outstream )
-            state.outstream.getTracks().forEach(track => {
-                track.stop()
-            });
+        if( outstream )
+            stopTracks(outstream)
     })
 
     const onConnected = (peer) => {
@@ -56,7 +55,7 @@
         if( state.relays.filter( _peer => _peer !== peer ).length < 1 ) {
             console.log('Request to Connect via Streamer')
             state.openConnections[peer] = state.client.connect(peer)
-            const call = state.client.call(peer, state.outstream)
+            const call = state.client.call(peer, outstream)
             if( ! state.relays.includes(peer ) )
                 state.relays.push(peer)
         }else {
@@ -91,7 +90,7 @@
 
     const startRecording = async () => {
         const getUserMedia = async () => await navigator.mediaDevices.getUserMedia({video: true, audio: true})
-        state.outstream = await getUserMedia()
+        outstream = await getUserMedia()
     }
 
     const startExploreClient = () => {
@@ -201,7 +200,7 @@
 <div class="live-wrapper h-100 w-100 overflow-auto">
     <div class="d-flex flex-column row-gap-3 bg-black bg-opacity-50 p-3">
         <h3>Viewers</h3>
-        {#each state.peers as peer }
+        {#each state.peers as peer, i (i) }
             <a href="/chat/{peer}" class="d-flex border border-dark flex-row align-items-center  justify-content-between gap-3 text-white p-3 py-2 bg-dark rounded">
                 <span class="d-flex flex-row align-items-center gap-3">
                     <AvatarBeam name={peer} />
@@ -216,13 +215,10 @@
     <div class="d-flex flex-column row-gap-3 p-3">
         <div class="position-relative">
             <RemoteVideo 
-                props={{
-                    stream: state.outstream,
-                    peer: $user.id
-                }}
-                setScreenshot={(value) => liveData.image = value }
+                stream={outstream}
+                setScreenshot={ state.client.connected ? (value) => liveData.image = value : false }
             />
-            {#if ! state.outstream}
+            {#if ! outstream}
             <div class="position-absolute w-100 h-100 start-0 top-0 d-flex flex-column align-items-center justify-content-center">
                 <button 
                     on:click={startRecording}
@@ -243,7 +239,7 @@
             {/if}
         </div>
         <div class="d-flex flex-row justify-content-between">
-            <span class="">{ ! state.outstream ? `Waiting for video` : !state.client ? `Waiting for live` : `Connected`}</span>
+            <span class="">{ ! outstream ? `Waiting for video` : !state.client ? `Waiting for live` : `Connected`}</span>
             <span class="d-flex flex-row px-2 py-1 gap-2 fw-semibold align-items-center rounded bg-black bg-opacity-50">
                 <img src={Eye} class="icon" />
                 <span>

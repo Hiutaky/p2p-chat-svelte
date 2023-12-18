@@ -7,19 +7,22 @@
     import Reload from "$lib/images/reload.svg"
     import uuid4 from "uuid4"
     import axios from "axios"
-    import { getPublicURI } from "$lib/utilities";
+    import { getPublicURI, stopTracks } from "$lib/utilities";
+    import { fly } from "svelte/transition";
 
     const initState = {
         client: false,
         inCall: false,
         outCall: false,
         queue: false,
-        IncomingVideo: false,
-        OutcomingVideo: false,
-        incomingStream: false, 
-        outcomingStream: false,
+        
         peer: false,
     }
+    let IncomingVideo = false,
+        OutcomingVideo = false,
+        incomingStream = false, 
+        outcomingStream = false
+
     let randomHash = uuid4()
     let starter 
     let queueInterval = false
@@ -27,10 +30,10 @@
     let queueClient = false
     let isQueue = true
 
-    $: if( state.IncomingVideo && state.incomingStream)
-        state.IncomingVideo.srcObject = state.incomingStream
-    $: if( state.OutcomingVideo && state.outcomingStream ) 
-        state.OutcomingVideo.srcObject =  state.outcomingStream
+    $: if( IncomingVideo && incomingStream)
+        IncomingVideo.srcObject = incomingStream
+    $: if( OutcomingVideo && outcomingStream ) 
+        OutcomingVideo.srcObject =  outcomingStream
 
     onMount( async () => {
         const StartClient = await import("$lib");
@@ -45,6 +48,9 @@
             clearInterval(queueInterval)
         if( queueClient )
             queueClient.destroy()
+        if( outcomingStream ) {
+            stopTracks(outcomingStream)
+        }
         state = initState
     })
 
@@ -65,30 +71,30 @@
         startQueue()
     }
 
+    const startMediaStream = async () => {
+        const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mediaDevices.GetUserMedia;
+        await getUserMedia({video: true, audio: true}, (stream) => {
+            outcomingStream = stream
+        })
+    }
+
     const startOutgoingCall = async (peer) => {
         console.log('Connecting to', peer)
         state.peer = peer
         _maybe_init_roulette()
         clearInterval(queueInterval)
         queueClient.disconnect()
-        const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mediaDevices.GetUserMedia;
-        await getUserMedia({video: true, audio: true}, function(stream) {
-            let call = state.client.call(peer, stream);
-            state.outcomingStream = stream
-            state.outCall = call
-            call.on('stream', function(remoteStream) {
-                state.incomingStream = remoteStream
-            })
-            call.on('close', function() {
-                console.log(`On Outgoing Close`)
-                next()
-                stream.getTracks().forEach( (track) => track.stop() )
-            })
-            call.on('error', (err) => {
-                console.log('error', err)
-            })
-        }, function(err) {
-            console.log('Failed to get local stream' ,err);
+        const call = state.client.call(peer, outcomingStream);
+        state.outCall = call
+        call.on('stream', function(remoteStream) {
+            incomingStream = remoteStream
+        })
+        call.on('close', function() {
+            console.log(`On Outgoing Close`)
+            next()
+        })
+        call.on('error', (err) => {
+            console.log('error', err)
         })
         state.queue = false
     }
@@ -100,8 +106,7 @@
             state.inCall.close()
         if( state.outCall )
             state.outCall.close()
-        state.incomingStream = false
-        state.outcomingStream = false
+        incomingStream = false
         state.inCall = false
         state.outCall = false
         state.peer = false
@@ -149,35 +154,35 @@
                 clearInterval(queueInterval)
             state.queue = false
             state.inCall = incCall
-            const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mediaDevices.GetUserMedia;
-            await getUserMedia({video: true, audio: true}, function(stream) {
-                state.outcomingStream = stream
-                state.inCall.answer(stream)
+            if( outcomingStream ) {
+                state.inCall.answer(outcomingStream)
                 state.inCall.on('stream', function(remoteStream) {
-                    state.incomingStream = remoteStream
+                    incomingStream = remoteStream
                 })
                 state.inCall.on('close', function(remoteStream) {
                     console.log(`On Incoming Close`)
                     next()
-                    stream.getTracks().forEach( (track) => track.stop() )
+                    //outcomingStream.getTracks().forEach( (track) => track.stop() )
                 })
-            }, function(err) {
+            }else {
                 state.inCall = false
                 state.queue = false
                 console.log('Failed to get local stream' ,err);
-            });
+            }
         })
     }
 
 </script>
-{#if  state.inCall || state.outCall}
-    <div class="video-wrapper w-100 d-flex flex-column flex-md-row gap-3 align-items-start p-3">
-        <div class="w-100 rounded position-relative">
-            <video class="d-flex h-100 w-100 rounded" bind:this={state.IncomingVideo} autoplay playsinline></video>
+{#if outcomingStream }
+    <div transition:fly class="video-wrapper w-100 d-flex flex-column flex-md-row gap-3 align-items-center justify-content-center p-3">
+        {#if incomingStream }
+        <div class="w-100 rounded position-relative" transition:fly>
+            <video class="d-flex h-100 w-100 rounded" bind:this={IncomingVideo} autoplay playsinline></video>
             <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">{ state.peer }</span>
         </div>
+        {/if}
         <div class="w-100 rounded d-flex position-relative">
-            <video class="w-100 rounded" bind:this={state.OutcomingVideo} autoplay muted playsinline></video>
+            <video class="w-100 rounded" bind:this={OutcomingVideo} autoplay muted playsinline></video>
             <span class="m-2 px-2 py-0 fs-14 bg-dark rounded position-absolute start-0 bottom-0">You</span>
         </div>
     </div>
@@ -197,30 +202,37 @@
             </button>
         </div>
     </div>
-{:else}
-<div class="d-flex flex-column align-items-center justify-content-center position-absolute start-0 top-0 w-100 h-100 bg-dark">
-    <div class="d-flex flex-column row-gap-3 align-items-center p-3 bg-black bg-opacity-50 shadow rounded">
-        <AvatarBeam name={randomHash} size={64}/>
-        {#if state.peer }
-        <span class="fw-medium fs-6">Connecting with {state.peer}...</span>
-        {:else if ! state.inCall && ! state.outCall && ! state.queue }
-        <span class="fw-medium fs-6">Ready for a match?</span>
-        <div class="d-flex flex-row column-gap-3  justify-content-center">
-            <button 
-                class=" btn btn-success d-flex"
-                on:click={startQueue}
+{/if}
+{#if ! state.peer }
+<div class="d-flex flex-column align-items-center justify-content-center position-absolute start-0 top-0 w-100 h-100">
+    <div transition:fly class="d-flex flex-column row-gap-3 align-items-center p-3 bg-dark border-dark border shadow rounded">
+        <AvatarBeam name={randomHash} size={64} />
+        {#if ! outcomingStream }
+            <button
+                on:click={ startMediaStream }
             >
-                Start
+                Enable Webcam
             </button>
-        </div>
+        {:else if state.peer }
+            <span class="fw-medium fs-6">Connecting with {state.peer}...</span>
+        {:else if ! state.inCall && ! state.outCall && ! state.queue }
+            <span class="fw-medium fs-6">Ready for a match?</span>
+            <div class="d-flex flex-row column-gap-3  justify-content-center">
+                <button 
+                    class=" btn btn-success d-flex"
+                    on:click={startQueue}
+                >
+                    Start
+                </button>
+            </div>
         {:else if state.queue}
-        <span class="fw-medium fs-6">Searching for a match...</span>
-        <button 
-            class=" btn btn-danger d-flex"
-            on:click={onClose}
-        >
-            Close
-        </button>
+            <span class="fw-medium fs-6">Searching for a match...</span>
+            <button 
+                class=" btn btn-danger d-flex"
+                on:click={onClose}
+            >
+                Close
+            </button>
         {/if}
     </div>
 </div>

@@ -7,6 +7,9 @@
     import { instance } from "../store/instance";
     import axios from "axios";
     import { getPeers, getPublicURI } from "$lib/utilities";
+    import { page } from "$app/stores";
+    import { composeNotification, notifier } from "../store/notifier";
+    import { goto } from "$app/navigation";
 
     $: CreateClient = false
     $: init = false
@@ -37,7 +40,7 @@
     let startConnection = () => {
         if( ! $user.name || ! CreateClient ) return
         try {
-            $main.client = CreateClient($user.name)
+            $main.client = CreateClient($user.name, 'main', 9000)
         } catch (e) {
             $main.connected = false
             console.error(e)
@@ -53,6 +56,19 @@
         
         $main.client.on('connection', (conn) => {
             $main.incoming[conn.peer] = conn
+            if( conn.metadata.messages ) {
+                const localMessages = JSON.stringify($main.messages[conn.peer])
+                if( localMessages !== conn.metadata.messages ) {
+                    if( localMessages.length > conn.metadata.messages.length ) {
+                        
+                        //local messages newer than remote
+                    } else if( localMessages.length < conn.metadata.messages.length ) {
+                        $main.messages[conn.peer] = JSON.parse(conn.metadata.messages)
+                    } else {
+                        
+                    }
+                }
+            }
             if( ! keysIncludes( $main.outcoming, conn.peer ) ){
                 $main.outcoming[conn.current] = $main.client.connect(conn.current, {
                     label: $user.name
@@ -66,8 +82,26 @@
                 }]
             }
             conn.on('data', (message) => {
-                console.log( `New Message from ${conn.peer}`, message)
-                addMessage(message, conn.peer, conn.label)
+                if( keysIncludes(message, 'type')) {
+                    switch (message.type) {
+                        case 'MESSAGE':
+                            addMessage(message, conn.peer, conn.label)
+                            if( ! $page.route.id.replace('[slug]', conn.peer ).includes(`/chat/${conn.peer}`) ) {
+                                $notifier.notifications = [
+                                    ...$notifier.notifications,
+                                    composeNotification({
+                                        peer: conn.peer,
+                                        type: 'message',
+                                        content: `${conn.peer} sent you a message.`,
+                                        actions: () => goto(`/chat/${conn.peer}`)
+                                    })
+                                ]
+                            }
+                            break;
+                        case 'PENDING':
+                            break;
+                    }
+                }
             })
         })
 
